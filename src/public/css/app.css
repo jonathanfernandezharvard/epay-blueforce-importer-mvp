@@ -1,0 +1,368 @@
+﻿@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+:root {
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --surface: #ffffff;
+  --surface-subtle: #f4f6fa;
+  --surface-strong: #eef2f8;
+  --border: #d7e0ec;
+  --border-strong: #c1cad8;
+  --text-primary: #1f2a3c;
+  --text-muted: #5c6c80;
+  --accent: #0047ab;
+  --accent-strong: #053076;
+  --accent-soft: #d4e3ff;
+  --success: #0d875a;
+  --warning: #a16307;
+  --error: #c53838;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  font-family: inherit;
+}
+
+.app-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 0;
+}
+
+.app-bar-nav {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.app-brand-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ebf2ff, #cddcff);
+  display: grid;
+  place-content: center;
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+
+.back-link {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.nav-link,
+.link-button {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--accent);
+  font-weight: 600;
+  padding: 0.4rem 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.nav-link:hover,
+.link-button:hover {
+  background: var(--accent-soft);
+}
+
+.link-button button {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.app-shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.5rem 1.75rem 4rem;
+}
+
+header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 1.65rem;
+  font-weight: 600;
+}
+
+.field-hint {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.status-pill {
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  background: var(--surface-strong);
+  color: var(--text-muted);
+  font-weight: 500;
+  border: 1px solid var(--border);
+}
+
+.content-grid {
+  display: flex;
+  justify-content: center;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.75rem;
+  box-shadow: 0 12px 28px rgba(20, 35, 70, 0.08);
+  width: min(640px, 100%);
+}
+
+.card h2 {
+  margin-top: 0;
+  margin-bottom: 0.6rem;
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.card p {
+  margin: 0 0 1rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+form {
+  display: grid;
+  gap: 1.2rem;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0, 71, 171, 0.18);
+}
+
+button {
+  border: none;
+  border-radius: 10px;
+  padding: 0.8rem 1.15rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 12px 24px rgba(0, 71, 171, 0.18);
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 28px rgba(0, 71, 171, 0.24);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.stat-card {
+  background: var(--surface-strong);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.stat-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.notice {
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+}
+
+.notice--info {
+  border-color: #adc6ff;
+  background: #f0f5ff;
+  color: #1d39c4;
+}
+
+.notice--success {
+  border-color: #b7eb8f;
+  background: #f6ffed;
+  color: var(--success);
+}
+
+.notice--warning {
+  border-color: #ffe58f;
+  background: #fffbe6;
+  color: var(--warning);
+}
+
+.notice--error {
+  border-color: #ffa39e;
+  background: #fff1f0;
+  color: var(--error);
+}
+
+.table-container {
+  margin-top: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 520px;
+}
+
+thead {
+  background: var(--surface-strong);
+}
+
+th, td {
+  padding: 0.8rem 1rem;
+  text-align: left;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border);
+}
+
+tbody tr:hover {
+  background: var(--surface-strong);
+}
+
+footer {
+  margin-top: 3rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 720px) {
+  .app-bar-nav {
+    padding: 0 1rem;
+  }
+
+  .nav-actions {
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .card {
+    width: 100%;
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+
+  table {
+    min-width: 100%;
+  }
+}
+

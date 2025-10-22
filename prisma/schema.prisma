@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+model Batch {
+  id               String      @id @default(uuid())
+  payrollId        String
+  jobsJson         String
+  csvPath          String
+  status           String
+  outcome          String?
+  requestedByUpn   String
+  idempotencyHash  String
+  createdUtc       DateTime    @default(now())
+  updatedUtc       DateTime    @updatedAt
+  items            BatchItem[]
+
+  @@index([createdUtc])
+  @@index([idempotencyHash])
+}
+
+model BatchItem {
+  id            String      @id @default(uuid())
+  batchId       String
+  siteCode      String
+  status        String
+  message       String?
+  screenshotPath String?
+  createdUtc    DateTime    @default(now())
+  updatedUtc    DateTime    @updatedAt
+  batch         Batch       @relation(fields: [batchId], references: [id])
+
+  @@index([batchId])
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  displayName  String
+  role         UserRole  @default(USER)
+  createdUtc   DateTime  @default(now())
+  updatedUtc   DateTime  @updatedAt
+}

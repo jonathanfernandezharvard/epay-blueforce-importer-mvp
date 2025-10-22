@@ -1,0 +1,116 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BF – Job Import Assistant</title>
+    <link rel="stylesheet" href="/css/app.css" />
+  </head>
+  <body>
+    <nav class="app-bar">
+      <div class="app-bar-nav">
+        <a class="app-brand" href="/">
+          <div class="app-brand-icon">BF</div>
+          BF Job Access Importer
+        </a>
+        <div class="nav-actions">
+          <% if (currentUser?.role === 'ADMIN') { %>
+            <a class="nav-link" href="/admin/users">Admin</a>
+          <% } %>
+          <% if (currentUser) { %>
+            <form method="POST" action="/logout">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <button type="submit" class="link-button">Sign out</button>
+            </form>
+          <% } else { %>
+            <a class="nav-link" href="/login">Sign in</a>
+          <% } %>
+        </div>
+      </div>
+    </nav>
+
+    <div class="app-shell">
+      <header>
+        <div class="brand">
+          <h1>Job Import Assistant</h1>
+          <p class="field-hint">
+            Submit employee job assignments for Blueforce. We validate, deduplicate, and queue the automation run for you.
+          </p>
+        </div>
+        <span class="status-pill">Queue ready</span>
+      </header>
+
+      <div class="content-grid">
+        <section class="card">
+          <h2>Create a batch</h2>
+          <p>
+            Provide an employee ID and the job codes to assign. The importer prepares the CSV, schedules the automation run, and reports
+            on the outcome as soon as Blueforce responds.
+          </p>
+
+          <div id="submit-feedback" aria-live="polite"></div>
+
+          <form id="submit-form" method="POST" action="/submit">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+            <label for="payrollId">
+              Employee ID
+              <input
+                id="payrollId"
+                name="payrollId"
+                type="text"
+                required
+                autocomplete="off"
+                placeholder="e.g., 123456"
+                inputmode="numeric"
+                pattern="[0-9]+"
+                title="Employee ID must contain numbers only"
+              />
+              <span class="field-hint">Enter the Blueforce employee identifier to update.</span>
+            </label>
+
+            <label for="jobs">
+              Job numbers
+              <textarea
+                id="jobs"
+                name="jobs"
+                required
+                rows="8"
+                placeholder="1001, 1002, 1003"
+              ></textarea>
+              <span class="field-hint">
+                Separate codes with commas, semicolons, spaces, or new lines. Duplicates are removed automatically.
+              </span>
+            </label>
+
+            <div class="quick-stats">
+              <div class="stat-card">
+                <div class="stat-label">Maximum per batch</div>
+                <div class="stat-value">300 jobs</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">CSV handling</div>
+                <div class="stat-value">Generated automatically</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Queue discipline</div>
+                <div class="stat-value">First in, first out</div>
+              </div>
+            </div>
+
+            <button type="submit">Queue import</button>
+            <span class="field-hint">
+              All activity is logged. Review progress and audit details in the Batch Activity view.
+            </span>
+          </form>
+        </section>
+      </div>
+
+      <footer>
+        Questions or improvements? Contact the Blueforce automation team or post in #blueforce-support.
+      </footer>
+    </div>
+
+    <script src="/js/submit.js" type="module"></script>
+  </body>
+</html>

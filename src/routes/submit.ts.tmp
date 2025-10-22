@@ -1,0 +1,117 @@
+import { Router, Request, Response } from "express";
+import csrf from "csurf";
+import { z } from "zod";
+import { PrismaClient } from "@prisma/client";
+import { buildCsv } from "../services/csvBuilder";
+import { computeBatchHash } from "../services/idempotency";
+import { InProcessQueue } from "../services/queue";
+import { PerUserTTLRateLimiter } from "../services/rateLimiter";
+import { requireAuth, currentUserEmail } from "../auth/localAuth";
+import { logger } from "../services/logger";
+
+const router = Router();
+const csrfProtection = csrf({ cookie: false });
+
+const prisma = new PrismaClient();
+
+const rateLimiter = new PerUserTTLRateLimiter(10);
+
+const BodySchema = z.object({
+  payrollId: z.string().trim().min(1, "Employee ID is required"),
+  jobs: z.string().trim().min(1, "At least one job number is required"),
+});
+
+function parseJobs(raw: string): string[] {
+  const parts = raw
+    .split(/[\n,;]+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+  const distinct = Array.from(new Set(parts));
+  return distinct;
+}
+
+export default function buildSubmitRouter(queue: InProcessQueue<string>) {
+  router.post("/submit", requireAuth(), csrfProtection, async (req: Request, res: Response) => {
+    const requester = currentUserEmail(req);
+    const csrfToken = req.csrfToken();
+    // Rate limit per user
+    const rl = rateLimiter.checkAndSet(requester);
+    if (!rl.allowed) {
+      res.setHeader("Retry-After", Math.ceil(rl.retryAfterMs / 1000).toString());
+      res.setHeader("X-CSRF-Token", csrfToken);
+      return res.status(429).json({ error: "Too many requests, please wait a moment.", csrfToken });
+    }
+
+    const parse = BodySchema.safeParse(req.body);
+    if (!parse.success) {
+      logger.warn({ requester, errors: parse.error.flatten() }, "Validation error");
+      res.setHeader("X-CSRF-Token", csrfToken);
+      return res.status(400).json({ error: "Invalid input", details: parse.error.flatten(), csrfToken });
+    }
+    const { payrollId, jobs } = parse.data;
+    const jobList = parseJobs(jobs);
+    if (jobList.length === 0) {
+      res.setHeader("X-CSRF-Token", csrfToken);
+      return res.status(400).json({ error: "No valid job numbers provided", csrfToken });
+    }
+    if (jobList.length > 300) {
+      res.setHeader("X-CSRF-Token", csrfToken);
+      return res.status(400).json({ error: "Max 300 jobs per batch exceeded", csrfToken });
+    }
+
+    const idHash = computeBatchHash(payrollId, jobList);
+
+    // Idempotency within 15 minutes for same user & same hash
+    const windowStart = new Date(Date.now() - 15 * 60_000);
+    const existing = await prisma.batch.findFirst({
+      where: {
+        requestedByUpn: requester,
+        idempotencyHash: idHash,
+        createdUtc: { gt: windowStart },
+      },
+      orderBy: { createdUtc: "desc" },
+    });
+    if (existing) {
+      logger.info({ requester, batchId: existing.id }, "Idempotent hit, reusing batch");
+      res.setHeader("X-CSRF-Token", csrfToken);
+      return res.status(200).json({ batchId: existing.id, idempotent: true, csrfToken });
+    }
+
+    // Build CSV
+    const csvDir = process.env.IMPORT_FILE_DIR || "/data/imports";
+    const { path: csvPath } = await buildCsv(csvDir, payrollId, jobList);
+
+    // Persist batch
+    const batch = await prisma.batch.create({
+      data: {
+        payrollId,
+        jobsJson: JSON.stringify(jobList),
+        csvPath,
+        status: "Queued",
+        outcome: null,
+        requestedByUpn: upn,
+        idempotencyHash: idHash,
+      },
+    });
+    // Create items
+    await prisma.$transaction(
+      jobList.map((site) =>
+        prisma.batchItem.create({
+          data: {
+            batchId: batch.id,
+            siteCode: site,
+            status: "Queued",
+          },
+        })
+      )
+    );
+
+    // Enqueue
+    queue.enqueue(batch.id);
+    logger.info({ requester, batchId: batch.id, items: jobList.length, csvPath }, "Batch enqueued");
+    res.setHeader("X-CSRF-Token", csrfToken);
+    return res.status(200).json({ batchId: batch.id, csrfToken });
+  });
+
+  return router;
+}

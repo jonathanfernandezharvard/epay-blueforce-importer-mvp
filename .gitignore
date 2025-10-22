@@ -1,0 +1,39 @@
+# Dependency directories
+node_modules/
+
+# Build and coverage output
+dist/
+build/
+coverage/
+
+# Environment and local configuration
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.DS_Store
+Thumbs.db
+
+# Logs and runtime artifacts
+*.log
+logs/
+qa_run.log
+
+# Playwright artifacts and local data
+playwright-report/
+test-results/
+data/
+storageState*.json
+
+# Prisma local database
+prisma/dev.db
+prisma/*.db-journal
+
+# IDE/editor folders
+.idea/
+.vscode/
+
+# TypeScript incremental builds
+*.tsbuildinfo
+

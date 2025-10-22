@@ -1,0 +1,121 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>User administration · BF Job Access Importer</title>
+    <link rel="stylesheet" href="/css/app.css" />
+  </head>
+  <body>
+    <nav class="app-bar">
+      <div class="app-bar-nav">
+        <a class="app-brand" href="/">
+          <div class="app-brand-icon">BF</div>
+          BF Job Access Importer
+        </a>
+        <div class="nav-actions">
+          <a class="nav-link" href="/">Submit</a>
+          <form method="POST" action="/logout">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <button type="submit" class="link-button">Sign out</button>
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <div class="app-shell">
+      <header>
+        <div class="brand">
+          <h1>User administration</h1>
+          <p class="field-hint">
+            Manage importer access. Only administrators can view this page. You are signed in as <strong><%= currentUser.displayName %></strong>.
+          </p>
+        </div>
+      </header>
+
+      <div class="content-grid">
+        <section class="card">
+          <h2>Existing users</h2>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Email</th>
+                  <th>Name</th>
+                  <th>Role</th>
+                  <th>Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (users.length === 0) { %>
+                  <tr>
+                    <td colspan="4">No users found. Create the first account below.</td>
+                  </tr>
+                <% } %>
+                <% for (const user of users) { %>
+                  <tr>
+                    <td><%= user.email %></td>
+                    <td><%= user.displayName %></td>
+                    <td><%= user.role %></td>
+                    <td><%= new Date(user.createdUtc).toLocaleString() %></td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <div class="content-grid" style="margin-top: 1.5rem;">
+        <section class="card">
+          <h2>Create a new user</h2>
+          <% if (errors) { %>
+            <div class="notice notice--error">
+              <p>Unable to create user.</p>
+              <% if (errors.fieldErrors) { %>
+                <ul>
+                  <% Object.entries(errors.fieldErrors).forEach(([field, msgs]) => { %>
+                    <% msgs?.forEach((msg) => { %>
+                      <li><strong><%= field %></strong>: <%= msg %></li>
+                    <% }) %>
+                  <% }) %>
+                </ul>
+              <% } %>
+            </div>
+          <% } %>
+
+          <form method="POST" action="/admin/users">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+            <label for="email">
+              Email
+              <input id="email" name="email" type="email" required />
+            </label>
+
+            <label for="displayName">
+              Display name
+              <input id="displayName" name="displayName" type="text" required />
+            </label>
+
+            <label for="password">
+              Temporary password
+              <input id="password" name="password" type="password" required minlength="8" />
+              <span class="field-hint">Share the temporary password with the user. They should change it after signing in.</span>
+            </label>
+
+            <label for="role">
+              Role
+              <select id="role" name="role">
+                <option value="USER">User</option>
+                <option value="ADMIN">Administrator</option>
+              </select>
+            </label>
+
+            <button type="submit">Create user</button>
+          </form>
+        </section>
+      </div>
+    </div>
+  </body>
+</html>
+

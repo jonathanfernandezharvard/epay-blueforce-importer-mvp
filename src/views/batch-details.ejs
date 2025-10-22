@@ -1,0 +1,137 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Batch <%= batch.id %> â€“ EPAY Activity</title>
+    <link rel="stylesheet" href="/css/app.css" />
+  </head>
+  <body>
+    <nav class="app-bar">
+      <div class="app-bar-nav">
+        <a class="app-brand" href="/">
+          <div class="app-brand-icon">BF</div>
+          BF Job Access Importer
+        </a>
+        <div class="nav-actions">
+          <% if (currentUser?.role === 'ADMIN') { %>
+            <a class="nav-link" href="/admin/users">Admin</a>
+          <% } %>
+          <form method="POST" action="/logout">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <button type="submit" class="link-button">Sign out</button>
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <div class="app-shell">
+      <header>
+        <div class="brand">
+          <h1>Batch Activity</h1>
+          <p class="field-hint">Live status for queued job imports. Updates every few seconds.</p>
+        </div>
+        <div class="header-actions">
+          <a class="nav-link" href="/">Submit</a>
+          <span class="status-pill">Auto-refreshing</span>
+        </div>
+      </header>
+
+      <section class="card">
+        <h2>
+          Batch <code><%= batch.id %></code>
+        </h2>
+        <p>Employee ID: <strong><%= batch.payrollId %></strong></p>
+
+        <div class="quick-stats">
+          <div class="stat-card">
+            <div class="stat-label">Current status</div>
+            <div class="stat-value" id="status"><%= batch.status %></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Created</div>
+            <div class="stat-value"><%= new Date(batch.createdUtc).toLocaleString() %></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Last update</div>
+            <div class="stat-value" id="last-updated"><%= new Date(batch.updatedUtc).toLocaleString() %></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">CSV export</div>
+            <div class="stat-value"><a href="/batches/<%= batch.id %>/csv">Download</a></div>
+          </div>
+        </div>
+
+        <div class="stat-card" style="margin-top: 1.25rem;">
+          <div class="stat-label">Outcome details</div>
+          <div class="stat-value" id="outcome"><%= batch.outcome || "Pending" %></div>
+          <p class="field-hint">
+            Outcome text updates automatically when the import completes or encounters an error.
+          </p>
+        </div>
+
+        <div class="table-container">
+          <table role="grid">
+            <thead>
+              <tr>
+                <th>Site code</th>
+                <th>Status</th>
+                <th>Message</th>
+                <th>Screenshot</th>
+              </tr>
+            </thead>
+            <tbody id="items-body">
+              <% for (const it of batch.items) { %>
+                <tr>
+                  <td><%= it.siteCode %></td>
+                  <td><%= it.status %></td>
+                  <td><%= it.message || "" %></td>
+                  <td>
+                    <% if (it.screenshotPath) { %>
+                      <a href="/screenshots/<%= it.screenshotPath.split('/').pop() %>" target="_blank">View</a>
+                    <% } else { %>
+                      &mdash;
+                    <% } %>
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer>
+        Need to retry a failed site code? Requeue directly from the CSV or paste the job numbers into the home form.
+      </footer>
+    </div>
+
+    <script type="module">
+      import { startPolling } from "/js/batchPoller.js";
+      const batchId = "<%= batch.id %>";
+      startPolling(batchId, (data) => {
+        document.getElementById("status").textContent = data.status;
+        document.getElementById("outcome").textContent = data.outcome || "Pending";
+        const updated = document.getElementById("last-updated");
+        if (data.updatedUtc) {
+          updated.textContent = new Date(data.updatedUtc).toLocaleString();
+        }
+        const tbody = document.getElementById("items-body");
+        tbody.innerHTML = "";
+        for (const it of data.items) {
+          const row = document.createElement("tr");
+          const link = it.screenshotPath
+            ? `<a href="/screenshots/${it.screenshotPath.split("/").pop()}" target="_blank">View</a>`
+            : "&mdash;";
+          row.innerHTML = `
+            <td>${it.siteCode}</td>
+            <td>${it.status}</td>
+            <td>${it.message || ""}</td>
+            <td>${link}</td>
+          `;
+          tbody.appendChild(row);
+        }
+      });
+    </script>
+  </body>
+</html>
+

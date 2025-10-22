@@ -1,0 +1,55 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sign in · BF Job Access Importer</title>
+    <link rel="stylesheet" href="/css/app.css" />
+  </head>
+  <body>
+    <nav class="app-bar">
+      <div class="app-bar-nav">
+        <a class="app-brand" href="/">
+          <div class="app-brand-icon">BF</div>
+          BF Job Access Importer
+        </a>
+        <div class="nav-actions">
+          <a class="nav-link" href="/">Back</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="app-shell" style="max-width: 420px;">
+      <section class="card">
+        <h2>Sign in</h2>
+        <p class="field-hint">
+          Use your importer credentials to continue. If you need access, contact an administrator to create an account.
+        </p>
+
+        <% if (error) { %>
+          <div class="notice notice--error">
+            <p><%= error %></p>
+          </div>
+        <% } %>
+
+        <form method="POST" action="/login">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+          <label for="email">
+            Email
+            <input id="email" name="email" type="email" required autocomplete="username" />
+          </label>
+
+          <label for="password">
+            Password
+            <input id="password" name="password" type="password" required autocomplete="current-password" />
+          </label>
+
+          <button type="submit">Sign in</button>
+        </form>
+      </section>
+    </div>
+  </body>
+</html>
+
+

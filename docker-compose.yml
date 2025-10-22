@@ -1,0 +1,29 @@
+
+version: "3.9"
+services:
+  app:
+    build: .
+    image: epay-importer:local
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - BASE_URL=http://localhost:8080
+      - SESSION_SECRET=replace_with_random
+      - AZURE_TENANT_ID=${AZURE_TENANT_ID}
+      - AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
+      - AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET}
+      - EPAY_URL=${EPAY_URL}
+      - EPAY_CORP_ID=${EPAY_CORP_ID}
+      - EPAY_LOGIN_ID=${EPAY_LOGIN_ID}
+      - EPAY_PASSWORD=${EPAY_PASSWORD}
+      - IMPORT_TEMPLATE=${IMPORT_TEMPLATE:-Site Employee Defaults}
+      - IMPORT_FILE_DIR=/data/imports
+      - STORAGE_STATE_PATH=/data/state/storageState.json
+      - SCREENSHOTS_DIR=/data/screenshots
+      - PLAYWRIGHT_HEADLESS=true
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data/imports:/data/imports
+      - ./data/screenshots:/data/screenshots
+      - ./data/state:/data/state
