@@ -20,14 +20,14 @@ describe("Submit integration", () => {
 
   it("serves form, posts submit, writes CSV and enqueues", async () => {
     // Get CSRF token from form
-  const resGet = await agent.get("/");
+    const resGet = await agent.get("/");
     expect(resGet.status).toBe(200);
     const match = /name="_csrf" value="([^"]+)"/.exec(resGet.text);
     expect(match).toBeTruthy();
     const csrf = match![1];
 
     const form = new URLSearchParams();
-    form.set("payrollId", "PX001");
+    form.set("payrollId", "10001");
     form.set("jobs", "1001, 1002\n1002, 1003");
     form.set("_csrf", csrf);
 
@@ -52,15 +52,15 @@ describe("Submit integration", () => {
   });
 
   it("rejects >300 jobs", async () => {
-  const resGet = await agent.get("/");
-  const csrf = /name="_csrf" value="([^"]+)"/.exec(resGet.text)![1];
-    const many = Array.from({ length: 301 }, (_, i) => `S${i+1}`).join(",");
+    const resGet = await agent.get("/");
+    const csrf = /name="_csrf" value="([^"]+)"/.exec(resGet.text)![1];
+    const many = Array.from({ length: 301 }, (_, i) => `S${i + 1}`).join(",");
     const form = new URLSearchParams();
-    form.set("payrollId", "PX002");
+    form.set("payrollId", "10002");
     form.set("jobs", many);
     form.set("_csrf", csrf);
 
-    const resPost = await request(app)
+    const resPost = await agent
       .post("/submit")
       .set("Content-Type", "application/x-www-form-urlencoded")
       .send(form.toString());

@@ -16,7 +16,10 @@ describe("CSV builder", () => {
     expect(bom[2]).not.toBe(0xbf);
     const text = buf.toString("utf8");
     const lines = text.trim().split(/\n/);
-    expect(lines[0]).toBe("Payroll ID,SITECODE");
+    expect(lines[0]).toBe(
+      "Payroll ID,SITECODE,Default Task,Default Shift,IsActive  [Y/N] (Optional)"
+    );
+    expect(lines[1]).toBe("P123,J1,,,");
     expect(lines).toHaveLength(1 + 3);
   });
 });

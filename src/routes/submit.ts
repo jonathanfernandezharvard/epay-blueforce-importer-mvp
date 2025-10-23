@@ -39,11 +39,15 @@ export default function buildSubmitRouter(queue: InProcessQueue<string>) {
     const requester = currentUserEmail(req);
     const csrfToken = req.csrfToken();
     // Rate limit per user
-    const rl = rateLimiter.checkAndSet(requester);
-    if (!rl.allowed) {
-      res.setHeader("Retry-After", Math.ceil(rl.retryAfterMs / 1000).toString());
-      res.setHeader("X-CSRF-Token", csrfToken);
-      return res.status(429).json({ error: "Too many requests, please wait a moment.", csrfToken });
+    const rateLimitEnabled =
+      process.env.NODE_ENV !== "test" && process.env.TEST_DISABLE_RATE_LIMIT !== "true";
+    if (rateLimitEnabled) {
+      const rl = rateLimiter.checkAndSet(requester);
+      if (!rl.allowed) {
+        res.setHeader("Retry-After", Math.ceil(rl.retryAfterMs / 1000).toString());
+        res.setHeader("X-CSRF-Token", csrfToken);
+        return res.status(429).json({ error: "Too many requests, please wait a moment.", csrfToken });
+      }
     }
 
     const parse = BodySchema.safeParse(req.body);
@@ -119,4 +123,3 @@ export default function buildSubmitRouter(queue: InProcessQueue<string>) {
 
   return router;
 }
-
